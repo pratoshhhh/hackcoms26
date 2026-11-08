@@ -2,20 +2,20 @@
 
 Real-time smart fire hydrant monitoring and community maintenance platform.
 
-**Physical obstruction → ESP32 detection → Vultr backend → live dashboard alert → Tiger Data analytics → community clearing → Gemini verification → Solana Devnet reward.**
+**Physical obstruction → ESP32 detection → Vultr backend → live dashboard alert → Tiger Data analytics → community clearing → Gemini verification → reviewer sign-off.**
 
 ## Repo layout
 
 ```
 hackcoms26/
-├── backend/            FastAPI service (Python) — ingest, state machine, REST + WebSocket, Gemini, Solana
+├── backend/            FastAPI service (Python) — ingest, state machine, REST + WebSocket, Gemini
 │   ├── app/
-│   │   ├── api/        REST routers (hydrants, incidents, tasks, verify, payouts, analytics)
+│   │   ├── api/        REST routers (hydrants, incidents, tasks, verify, analytics)
 │   │   ├── core/       config, logging, security
 │   │   ├── db/         asyncpg pool + queries
 │   │   ├── models/     Pydantic schemas (payloads, API models)
 │   │   ├── mqtt/       RabbitMQ consumer (MQTT topics arrive on amq.topic)
-│   │   ├── services/   state machine, incident service, gemini, solana, storage, opencv checks
+│   │   ├── services/   state machine, incident service, gemini, storage, opencv checks
 │   │   └── ws/         WebSocket connection manager / broadcaster
 │   ├── db/init/        SQL schema (TimescaleDB hypertables, continuous aggregates)
 │   ├── rabbitmq/       RabbitMQ plugin + config

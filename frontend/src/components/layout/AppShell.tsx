@@ -5,7 +5,7 @@ import { CloudOff } from "lucide-react";
 import { BottomDock, TopLeft, TopRight } from "./ConsoleChrome";
 import { DemoControlPanel } from "./DemoControlPanel";
 import { SubscribeDialog } from "@/components/notifications/SubscribeDialog";
-import { useAlertToasts, useGlobalShortcuts, useOnlineStatus, useTicker } from "@/hooks";
+import { useAlertAudio, useAlertToasts, useGlobalShortcuts, useOnlineStatus, useTicker } from "@/hooks";
 import { useApp } from "@/stores/appStore";
 import { cn } from "@/lib/utils";
 
@@ -33,6 +33,7 @@ export function AppShell() {
   useOnlineStatus();
   useGlobalShortcuts(searchRef);
   useAlertToasts();
+  useAlertAudio();
 
   useEffect(() => {
     const go = (e: Event) => navigate((e as CustomEvent<string>).detail);

@@ -33,9 +33,10 @@ From the CLI instead: `npm i -g vercel`, then run `vercel` inside `frontend/` (a
 | `/map` | Live map: search, filters, layers, hydrant panel, demo controls |
 | `/incidents` | Active and resolved incidents |
 | `/analytics` | KPIs, weekly trend, causes, top-10 risk, neighborhood heatmap, history table |
-| `/maintenance` | Volunteer tasks: claim, QR, photos, verification, review, reward |
+| `/maintenance` | Volunteer tasks: claim, QR, photos, verification, review |
 | `/notifications` | In-app alerts and the simulated email/SMS delivery log |
 | `/settings` | Alert subscriptions, data source, integrations |
+| `/device` | ESP32 live demo: USB / backend / virtual sensor drives one hydrant, alerts are played and spoken |
 
 ## 90-second judge path
 
@@ -43,7 +44,7 @@ From the CLI instead: `npm i -g vercel`, then run `vercel` inside `frontend/` (a
 2. Press `/` and type `ROC-0001`, then press Enter. The map flies to the hydrant and the panel opens.
 3. Select **Demo** (top right), then **Simulate snow obstruction**. The marker turns red, a toast appears, the badge ticks, the twin grows a snow bank, and the chart jumps to 1H.
 4. Select **Subscribe to alerts** and save an email address. Matching events appear in **Notifications › Delivery log** as "Simulated — not sent".
-5. Open **Tasks**, choose the new task, and work through it: **Claim task** → **Scan QR code** → **Use sample** ×2 → **Simulate clearing obstruction** → **Submit evidence** → **Approve payout**. The hydrant returns to green and its history updates.
+5. Open **Tasks**, choose the new task, and work through it: **Claim task** → **Scan QR code** → **Use sample** ×2 → **Simulate clearing obstruction** → **Submit evidence** → **Approve clearance**. The hydrant returns to green and its history updates.
 
 ## Architecture
 

@@ -8,7 +8,7 @@ FastAPI service deployed on Vultr via Docker Compose.
 | `app/db` | asyncpg pool + SQL queries |
 | `app/models` | Pydantic models for MQTT payloads, API I/O, Gemini output schema |
 | `app/mqtt` | RabbitMQ consumer bound to `amq.topic` (`halo.v1.hydrants.*.telemetry`) |
-| `app/services` | `state_machine` (pure), `incidents`, `gemini`, `opencv_check`, `solana`, `storage` |
+| `app/services` | `state_machine` (pure), `incidents`, `gemini`, `opencv_check`, `storage` |
 | `app/api` | REST routers under `/api/v1` |
 | `app/ws` | WebSocket manager, `/ws` endpoint |
 | `db/init` | TimescaleDB schema — run against Tiger Data with `psql "$DATABASE_URL" -f db/init/001_schema.sql` |

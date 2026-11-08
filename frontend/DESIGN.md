@@ -61,7 +61,7 @@ Check with Chrome DevTools › Rendering › Emulate vision deficiencies before 
 
 ## 6. Navigation and components
 - **Bottom dock:** five destinations (Map, Incidents, Analytics, Tasks, Settings), icon plus label, with the active item on `--surface-3`. When the hydrant panel is open, the dock re-centres in the remaining space.
-- **One primary button per view.** Labels are verb + object ("Subscribe to alerts", "Claim task", "Approve payout").
+- **One primary button per view.** Labels are verb + object ("Subscribe to alerts", "Claim task", "Approve clearance").
 - Icon-only buttons always have `aria-label` and a tooltip.
 - Keyboard: `/` focuses search and `Esc` closes the hydrant panel.
 - Empty states say what's missing and give the next action. Error messages say what happened, why, and what to do.
@@ -87,7 +87,7 @@ Check with Chrome DevTools › Rendering › Emulate vision deficiencies before 
 
 ## 10. Honesty in copy
 - The dock always shows "Simulated data", and its tooltip explains the data sources.
-- Mock deliveries are labelled "Simulated — not sent", the reward "Simulated — not on-chain", and the twin "Illustrative model".
+- Mock deliveries are labelled "Simulated — not sent", and the twin "Illustrative model".
 - The landing page's technology table marks each component "In this demo" or "Planned".
 
 ## 11. Pre-merge checklist

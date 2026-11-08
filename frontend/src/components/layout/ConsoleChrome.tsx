@@ -2,12 +2,13 @@ import { forwardRef } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import * as Popover from "@radix-ui/react-popover";
-import { Bell, ChartColumn, FlaskConical, Info, Map, Settings, Siren, UserRound, Wrench } from "lucide-react";
+import { Bell, ChartColumn, FlaskConical, Info, Map, Settings, Siren, UserRound, Volume2, VolumeX, Wrench } from "lucide-react";
 import { useActiveIncidents, useApp, useHydrantList, useSelected, useUnread } from "@/stores/appStore";
 import { Button, Tip } from "@/components/ui/primitives";
 import { SearchBox } from "./SearchBox";
 import { NotificationList } from "@/components/notifications/NotificationList";
 import { clearHydrantCache } from "@/services/hydrantService";
+import { unlockAudio } from "@/services/alertAudio";
 import { cn } from "@/lib/utils";
 
 export function Logo({ className }: { className?: string }) {
@@ -115,6 +116,9 @@ function AccountMenu() {
           <DropdownMenu.Item className={item} onSelect={() => navigate("/notifications")}>
             Delivery log
           </DropdownMenu.Item>
+          <DropdownMenu.Item className={item} onSelect={() => navigate("/device")}>
+            ESP32 live demo
+          </DropdownMenu.Item>
           <DropdownMenu.Separator className="my-1 h-px bg-line" />
           <DropdownMenu.Item className={item} onSelect={() => void init()}>
             Reset demo state
@@ -138,7 +142,28 @@ function AccountMenu() {
   );
 }
 
-/** Top-right: status, demo, Hydrant Intelligence, notifications, account. */
+function SoundToggle() {
+  const enabled = useApp((s) => s.sound.enabled);
+  const setSound = useApp((s) => s.setSound);
+  return (
+    <Tip content={enabled ? "Alert sounds on" : "Alert sounds off"}>
+      <Button
+        variant="ghost"
+        size="icon"
+        aria-pressed={enabled}
+        aria-label="Alert sounds"
+        onClick={() => {
+          if (!enabled) unlockAudio();
+          setSound({ enabled: !enabled });
+        }}
+      >
+        {enabled ? <Volume2 /> : <VolumeX />}
+      </Button>
+    </Tip>
+  );
+}
+
+/** Top-right: status, demo, Hydrant Intelligence, sound, notifications, account. */
 export function TopRight() {
   const toggle = useApp((s) => s.toggle);
   const demoOpen = useApp((s) => s.demoPanelOpen);
@@ -153,10 +178,11 @@ export function TopRight() {
         </Button>
       </Tip>
       <Tip content="Ask questions about hydrants and incidents">
-        <Button variant="ghost" size="sm" className="h-8 whitespace-nowrap" onClick={() => toggle("copilotOpen")}>
+        <Button variant="primary" size="sm" className="mx-1 h-8 whitespace-nowrap px-3" onClick={() => toggle("copilotOpen")}>
           Hydrant Intelligence
         </Button>
       </Tip>
+      <SoundToggle />
       <BellMenu />
       <AccountMenu />
     </div>

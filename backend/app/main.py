@@ -44,6 +44,6 @@ async def health() -> dict:
 
 # Routers (to be implemented):
 #   app.api.hydrants, app.api.incidents, app.api.claims,
-#   app.api.payouts, app.api.analytics, app.api.ingest
+#   app.api.analytics, app.api.ingest
 # WebSocket: app.ws.manager -> /ws
 # Startup: app.mqtt.consumer (RabbitMQ), offline sweeper

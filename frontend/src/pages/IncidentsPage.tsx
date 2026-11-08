@@ -112,7 +112,7 @@ export default function IncidentsPage() {
                       </td>
                       <td className="num px-3 py-2 text-text-2">{fmtDateTime(i.startedAt)}</td>
                       <td className="num px-3 py-2 text-right">{duration((i.resolvedAt ?? now) - i.startedAt)}</td>
-                      <td className="px-3 py-2 text-text-3">{i.origin === "seeded" ? "Seeded" : i.origin === "demo" ? "Demo event" : "Report"}</td>
+                      <td className="px-3 py-2 text-text-3">{i.origin === "seeded" ? "Seeded" : i.origin === "demo" ? "Demo event" : i.origin === "device" ? "ESP32 sensor" : "Report"}</td>
                       <td className="px-3 py-1 pr-6">
                         <div className="flex justify-end gap-1">
                           <Button size="sm" variant="ghost" onClick={() => view(i.hydrantId)}>

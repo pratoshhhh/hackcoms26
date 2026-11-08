@@ -44,8 +44,40 @@ export function temperatureAt(seed: number, t: number): number {
   return Math.round((4.5 + diurnal + weather + site) * 10) / 10;
 }
 
+// ---- Live device readings (ESP32 over USB serial, backend WebSocket, or virtual sensor) ----
+const LIVE_KEEP_MS = 2 * 3600e3;
+const live = new Map<string, SensorReading[]>();
+
+export function pushLiveReading(id: string, r: SensorReading): void {
+  const buf = live.get(id) ?? [];
+  buf.push(r);
+  if (buf[0].t < r.t - LIVE_KEEP_MS) buf.splice(0, buf.findIndex((x) => x.t >= r.t - LIVE_KEEP_MS));
+  live.set(id, buf);
+}
+
+export function clearLiveReadings(id?: string): void {
+  if (id) live.delete(id);
+  else live.clear();
+}
+
+/** Latest live reading at or before t, once the device has started streaming. */
+function liveAt(id: string, t: number): SensorReading | undefined {
+  const buf = live.get(id);
+  if (!buf?.length || t < buf[0].t) return undefined;
+  let lo = 0;
+  let hi = buf.length - 1;
+  while (lo < hi) {
+    const mid = (lo + hi + 1) >> 1;
+    if (buf[mid].t <= t) lo = mid;
+    else hi = mid - 1;
+  }
+  return { ...buf[lo], t };
+}
+
 export function readingAt(h: Hydrant, incidents: Incident[], t: number): SensorReading {
   if (offlineAt(h, incidents, t)) return { t, distanceCm: null, temperatureC: null };
+  const fromDevice = liveAt(h.id, t);
+  if (fromDevice) return fromDevice;
   const inc = obstructionAt(h, incidents, t);
   const jitter = noise1d(h.seed, t / 90e3) * 2.5 + noise1d(h.seed + 1, t / 600e3) * 3;
   let distance: number;
@@ -68,6 +100,8 @@ export function series(h: Hydrant, incidents: Incident[], range: TimeRange, now:
 /** Last packet time — online hydrants report every reportIntervalS with a per-device phase. */
 export function lastUpdateAt(h: Hydrant, now: number): number {
   if (h.status === "offline") return h.monitored ? h.statusSince : h.lastInspection;
+  const buf = live.get(h.id);
+  if (buf?.length) return buf[buf.length - 1].t;
   const period = h.reportIntervalS * 1000;
   const phase = (h.seed % h.reportIntervalS) * 1000;
   return Math.floor((now - phase) / period) * period + phase;

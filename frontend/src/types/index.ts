@@ -46,7 +46,7 @@ export interface SensorReading {
 }
 
 export type IncidentKind = "obstruction" | "device";
-export type IncidentOrigin = "seeded" | "demo" | "report";
+export type IncidentOrigin = "seeded" | "demo" | "report" | "device";
 
 export interface Incident {
   id: string;
@@ -61,6 +61,26 @@ export interface Incident {
   /** Specific description of the obstruction. */
   detail?: string;
   note?: string;
+}
+
+/** One packet from a physical (or virtual) sensor node. */
+export interface DeviceReading {
+  t: number;
+  distanceCm: number;
+  temperatureC: number | null;
+  /** The node's own ID from its payload, e.g. "HYD-001". */
+  deviceId?: string;
+  raw?: string;
+}
+
+export type DeviceLinkKind = "serial" | "websocket" | "virtual";
+
+export interface DeviceLink {
+  kind: DeviceLinkKind;
+  status: "connecting" | "connected" | "error";
+  error?: string;
+  packets: number;
+  last: DeviceReading | null;
 }
 
 export type AlertKind = "blocked" | "warning" | "cleared" | "offline" | "restored" | "report";
@@ -129,14 +149,12 @@ export interface MaintenanceTask {
   incidentId: string;
   obstructionType: ObstructionType;
   urgency: "routine" | "priority" | "urgent";
-  bountyUsdc: number;
   status: TaskStatus;
   claimedBy?: string;
   qrVerified: boolean;
   beforePhoto?: string;
   afterPhoto?: string;
   verification?: VerificationResult;
-  reward: { status: "none" | "pending" | "simulated"; signature?: string };
   timeline: { status: TaskStatus; at: number; note?: string }[];
   createdAt: number;
 }

@@ -25,7 +25,6 @@ const INTEGRATIONS = [
   ["Tiger Data", "Time-series readings, incidents, analytics"],
   ["Gemini", "Photo verification and Hydrant Intelligence"],
   ["Resend / Twilio", "Email and SMS delivery"],
-  ["Solana Devnet", "Volunteer bounty payouts"],
 ];
 
 export default function SettingsPage() {

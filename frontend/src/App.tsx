@@ -10,6 +10,7 @@ const AnalyticsPage = lazy(() => import("@/pages/AnalyticsPage"));
 const MaintenancePage = lazy(() => import("@/pages/MaintenancePage"));
 const NotificationsPage = lazy(() => import("@/pages/NotificationsPage"));
 const SettingsPage = lazy(() => import("@/pages/SettingsPage"));
+const DevicePage = lazy(() => import("@/pages/DevicePage"));
 
 const page = (el: React.ReactNode) => <Suspense fallback={<div className="p-6 text-sm text-text-3">Loading…</div>}>{el}</Suspense>;
 
@@ -52,6 +53,7 @@ const router = createBrowserRouter([
       { path: "/maintenance", element: page(<MaintenancePage />) },
       { path: "/notifications", element: page(<NotificationsPage />) },
       { path: "/settings", element: page(<SettingsPage />) },
+      { path: "/device", element: page(<DevicePage />) },
       { path: "*", element: <NotFound /> },
     ],
   },

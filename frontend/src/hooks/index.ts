@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { useApp, useHydrantList } from "@/stores/appStore";
 import type { Hydrant } from "@/types";
 import { lastUpdateAt } from "@/services/telemetryService";
+import { announce, unlockAudio } from "@/services/alertAudio";
 
 /** Global 5s clock so "x s ago" labels and live chart edges advance. */
 export function useTicker(ms = 5000) {
@@ -110,6 +111,40 @@ export function useAlertToasts() {
       if (a.kind === "blocked") toast.error(a.title, { description: a.body, action, duration: 8000 });
       else if (a.kind === "warning" || a.kind === "offline" || a.kind === "report") toast.warning(a.title, { description: a.body, action });
       else toast.success(a.title, { description: a.body, action });
+    }
+  }, [alerts]);
+}
+
+/** Siren + spoken announcement for each new alert while sound is on. */
+export function useAlertAudio() {
+  const alerts = useApp((s) => s.alerts);
+  const seen = useRef<Set<string>>(new Set());
+  const primed = useRef(false);
+
+  useEffect(() => {
+    const unlock = () => {
+      if (useApp.getState().sound.enabled) unlockAudio();
+    };
+    window.addEventListener("pointerdown", unlock);
+    window.addEventListener("keydown", unlock);
+    return () => {
+      window.removeEventListener("pointerdown", unlock);
+      window.removeEventListener("keydown", unlock);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!primed.current) {
+      alerts.forEach((a) => seen.current.add(a.id));
+      primed.current = true;
+      return;
+    }
+    const { sound, hydrants } = useApp.getState();
+    for (const a of [...alerts].reverse()) {
+      if (seen.current.has(a.id)) continue;
+      seen.current.add(a.id);
+      const h = hydrants[a.hydrantId];
+      if (sound.enabled && h) announce(a, h, { voice: sound.voice });
     }
   }, [alerts]);
 }

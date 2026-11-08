@@ -7,13 +7,14 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { ContactShadows, OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 import type { HydrantStatus, ObstructionType } from "@/types";
-import { token } from "@/lib/utils";
+import { cn, token } from "@/lib/utils";
 import { useReducedMotion } from "@/hooks";
 
 interface Props {
   status: HydrantStatus;
   obstruction: ObstructionType | null;
   monitored: boolean;
+  className?: string;
 }
 
 export type Palette = ReturnType<typeof usePalette>;
@@ -275,10 +276,10 @@ function Scene({ status, obstruction, reduced }: Props & { reduced: boolean }) {
   );
 }
 
-export default function HydrantTwin(props: Props) {
+export default function HydrantTwin({ className, ...props }: Props) {
   const reduced = useReducedMotion();
   return (
-    <div className="h-52 overflow-hidden rounded-lg border border-line" aria-label="Interactive 3D illustration of the hydrant's reported state">
+    <div className={cn("h-52 overflow-hidden rounded-lg border border-line", className)} aria-label="Interactive 3D illustration of the hydrant's reported state">
       <Canvas shadows dpr={[1, 2]} camera={{ position: [2.1, 1.5, 2.6], fov: 38 }} gl={{ antialias: true, powerPreference: "low-power" }}>
         <Scene {...props} reduced={reduced} />
         <OrbitControls

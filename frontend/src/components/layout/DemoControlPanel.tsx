@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { CarFront, CloudSnow, Plug, ShieldCheck, WifiOff, X } from "lucide-react";
 import { useApp, useHydrantList, useSelected } from "@/stores/appStore";
@@ -37,7 +38,12 @@ export function DemoControlPanel() {
           <div className="flex items-center justify-between border-b border-line px-4 py-2">
             <div>
               <h2 className="text-base font-semibold">Demo controls</h2>
-              <p className="text-xs text-text-3">Simulated sensor events. They update the map, incidents, alerts and charts together.</p>
+              <p className="text-xs text-text-3">
+                Simulated sensor events. They update the map, incidents, alerts and charts together.{" "}
+                <Link to="/device" className="text-accent hover:underline" onClick={() => toggle("demoPanelOpen")}>
+                  Use the ESP32 instead
+                </Link>
+              </p>
             </div>
             <Button variant="ghost" size="icon-sm" onClick={() => toggle("demoPanelOpen")} aria-label="Close demo controls">
               <X />

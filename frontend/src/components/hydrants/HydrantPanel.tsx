@@ -67,7 +67,7 @@ function Blockage({ h }: { h: Hydrant }) {
       <p className="mt-1 text-sm text-text-1">{h.obstructionDetail ?? "No description yet."}</p>
       <p className="num mt-2 text-2xs text-text-2">
         {r.distanceCm !== null ? `${r.distanceCm.toFixed(0)} cm clearance` : "No reading"} · since {fmtDateTime(h.statusSince)} ({duration(now - h.statusSince)})
-        {open ? ` · ${open.origin === "report" ? "community report" : open.origin === "demo" ? "demo event" : "seeded"}` : ""}
+        {open ? ` · ${open.origin === "report" ? "community report" : open.origin === "device" ? "live ESP32 sensor" : open.origin === "demo" ? "demo event" : "seeded"}` : ""}
       </p>
     </section>
   );
@@ -115,7 +115,7 @@ function History({ h }: { h: Hydrant }) {
             <div className="text-sm text-text-1">{i.kind === "device" ? "Sensor offline" : i.obstructionType ? OBSTRUCTION_LABELS[i.obstructionType] : "Obstruction"}</div>
             {i.detail && <div className="text-xs text-text-2">{i.detail}</div>}
             <div className="num text-2xs text-text-3">
-              {fmtDateTime(i.startedAt)} · {i.origin === "seeded" ? "seeded history" : i.origin === "demo" ? "demo event" : "community report"}
+              {fmtDateTime(i.startedAt)} · {i.origin === "seeded" ? "seeded history" : i.origin === "demo" ? "demo event" : i.origin === "device" ? "live ESP32 sensor" : "community report"}
             </div>
           </div>
           <div className="text-right">

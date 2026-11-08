@@ -21,11 +21,6 @@ class Settings(BaseSettings):
     gemini_api_key: str = ""
     gemini_model: str = "gemini-3.8-flash"
 
-    solana_rpc_url: str = "https://api.devnet.solana.com"
-    solana_treasury_keypair_path: str = ""
-    solana_usdc_mint: str = ""
-    bounty_amount: float = 5.0
-
     s3_endpoint: str = ""
     s3_bucket: str = "hydrant-halo"
     s3_access_key: str = ""

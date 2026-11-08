@@ -73,7 +73,6 @@ CREATE TABLE IF NOT EXISTS volunteer_claims (
     id                BIGSERIAL PRIMARY KEY,
     incident_id       BIGINT NOT NULL REFERENCES incidents(id),
     volunteer_name    TEXT NOT NULL,
-    wallet_address    TEXT NOT NULL,
     status            TEXT NOT NULL DEFAULT 'CLAIMED'
                       CHECK (status IN ('CLAIMED','SUBMITTED','VERIFYING','READY_FOR_REVIEW','APPROVED','REJECTED')),
     before_photo_url  TEXT,
@@ -90,22 +89,6 @@ CREATE TABLE IF NOT EXISTS volunteer_claims (
 );
 CREATE UNIQUE INDEX IF NOT EXISTS uq_active_claim_per_incident
     ON volunteer_claims (incident_id) WHERE status NOT IN ('REJECTED');
-
--- ---------- Bounty payouts ----------
-CREATE TABLE IF NOT EXISTS bounty_payouts (
-    id             BIGSERIAL PRIMARY KEY,
-    claim_id       BIGINT NOT NULL UNIQUE REFERENCES volunteer_claims(id),  -- idempotency
-    wallet_address TEXT NOT NULL,
-    amount         NUMERIC(12,2) NOT NULL,
-    token_mint     TEXT,
-    network        TEXT NOT NULL DEFAULT 'devnet',
-    status         TEXT NOT NULL DEFAULT 'PENDING'
-                   CHECK (status IN ('PENDING','SUBMITTED','CONFIRMED','FAILED')),
-    tx_signature   TEXT,
-    error          TEXT,
-    created_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
-    confirmed_at   TIMESTAMPTZ
-);
 
 -- ---------- Continuous aggregates ----------
 CREATE MATERIALIZED VIEW IF NOT EXISTS readings_1m

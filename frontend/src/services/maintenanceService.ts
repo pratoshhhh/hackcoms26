@@ -5,17 +5,13 @@
  *   claim     → POST /api/v1/incidents/{id}/claim
  *   evidence  → POST /api/v1/claims/{id}/photos   (multipart, QR token)
  *   verify    → backend runs Gemini + OpenCV + sensor cross-check, pushes claim.verification_ready
- *   approve   → POST /api/v1/claims/{id}/review   → Solana Devnet payout (server-side)
+ *   approve   → POST /api/v1/claims/{id}/review
  *
  * verify() below is a deterministic rule set over the evidence we have. It does not
  * look at image content and must never be presented as AI analysis.
  */
 import type { Hydrant, Incident, MaintenanceTask, VerificationResult } from "@/types";
 import { BLOCK_THRESHOLD_CM, CLEAR_THRESHOLD_CM } from "./telemetryService";
-
-export function bountyFor(urgency: MaintenanceTask["urgency"]): number {
-  return urgency === "urgent" ? 15 : urgency === "priority" ? 10 : 5;
-}
 
 export function taskFromIncident(incident: Incident, hydrant: Hydrant, now: number): MaintenanceTask {
   const urgency: MaintenanceTask["urgency"] =
@@ -26,10 +22,8 @@ export function taskFromIncident(incident: Incident, hydrant: Hydrant, now: numb
     incidentId: incident.id,
     obstructionType: incident.obstructionType ?? "debris",
     urgency,
-    bountyUsdc: bountyFor(urgency),
     status: "open",
     qrVerified: false,
-    reward: { status: "none" },
     timeline: [{ status: "open", at: Math.min(now, incident.startedAt + 60000), note: "Task created from incident" }],
     createdAt: incident.startedAt,
   };
@@ -79,18 +73,6 @@ export function verify(task: MaintenanceTask, hydrant: Hydrant, latestDistance: 
     summary = `Evidence and sensor agree: ${hydrant.id} reads ${latestDistance!.toFixed(0)} cm clearance. Ready for reviewer approval.`;
   }
   return { state, confidence, obstructionType: task.obstructionType, checks, summary, generatedAt: now, simulated: true };
-}
-
-/** Clearly fake, Solana-shaped signature for the simulated reward state. */
-export function simulatedSignature(seed: string): string {
-  const alphabet = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
-  let h = 0;
-  let out = "";
-  for (let i = 0; i < 88; i++) {
-    h = (h * 31 + seed.charCodeAt(i % seed.length) + i) >>> 0;
-    out += alphabet[h % alphabet.length];
-  }
-  return out;
 }
 
 /** Illustrative sample photos (SVG) so judges can run the flow without a camera. */

@@ -22,7 +22,7 @@ const STEPS = [
   },
   {
     title: "Clear and verify",
-    body: "A nearby volunteer claims the task and uploads before-and-after photos. The sensor has to agree before a reviewer approves the reward.",
+    body: "A nearby volunteer claims the task and uploads before-and-after photos. The sensor has to agree before a reviewer signs off.",
   },
 ];
 
@@ -34,7 +34,6 @@ const STACK: [string, string, "Demo" | "Planned"][] = [
   ["FastAPI on Vultr", "API and WebSocket events", "Planned"],
   ["TimescaleDB on Tiger Data", "Time-series storage and analytics", "Planned"],
   ["Gemini", "Before-and-after photo verification", "Planned"],
-  ["Solana Devnet", "Volunteer bounty payouts", "Planned"],
 ];
 
 function LiveNumbers() {

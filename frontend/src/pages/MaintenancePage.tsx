@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import * as Tabs from "@radix-ui/react-tabs";
-import { Camera, Check, CircleDashed, ExternalLink, ImagePlus, QrCode, ShieldCheck } from "lucide-react";
+import { Camera, Check, CircleDashed, ImagePlus, QrCode, ShieldCheck } from "lucide-react";
 import { useApp } from "@/stores/appStore";
 import type { MaintenanceTask, TaskStatus, VerificationResult } from "@/types";
 import { Button, Input, Label, PageHeader } from "@/components/ui/primitives";
@@ -154,10 +154,6 @@ function TaskDetail({ task }: { task: MaintenanceTask }) {
             </p>
             {h && <p className="num mt-0.5 text-xs text-text-3">{h.lat.toFixed(6)}, {h.lng.toFixed(6)}</p>}
             {(h?.obstructionDetail ?? incidentDetail) && <p className="mt-2 text-sm text-text-1">{h?.obstructionDetail ?? incidentDetail}</p>}
-          </div>
-          <div className="text-right">
-            <div className="num text-lg">{task.bountyUsdc} USDC</div>
-            <div className="text-2xs text-text-3">Simulated bounty</div>
           </div>
         </div>
         <div className="mt-4">
@@ -315,7 +311,7 @@ function TaskDetail({ task }: { task: MaintenanceTask }) {
                 {task.status === "review" && (
                   <div className="mt-4 flex flex-wrap items-center gap-2">
                     <Button variant="primary" disabled={v.state === "rejected" || v.state === "pending_review"} onClick={() => s.reviewTask(task.id, true)}>
-                      Approve payout
+                      Approve clearance
                     </Button>
                     <Button variant="danger" onClick={() => s.reviewTask(task.id, false)}>
                       Reject claim
@@ -326,32 +322,6 @@ function TaskDetail({ task }: { task: MaintenanceTask }) {
               </div>
             )
           )}
-        </section>
-      )}
-
-      {/* 4. Reward */}
-      {(task.status === "approved" || task.reward.status !== "none") && (
-        <section className="border-b border-line px-6 py-4">
-          <h3 className="text-base font-semibold">Reward</h3>
-          <div className="mt-3 rounded border border-line bg-surface-1 px-3 py-3 text-sm">
-            <div className="flex items-center justify-between">
-              <span>
-                <span className="num">{task.bountyUsdc} USDC</span> to {task.claimedBy}
-              </span>
-              <span className={cn("text-xs", task.reward.status === "simulated" ? "text-ok" : "text-text-2")}>
-                {task.reward.status === "pending" ? "Preparing transfer…" : "Simulated — not on-chain"}
-              </span>
-            </div>
-            {task.reward.signature && (
-              <div className="mt-2">
-                <div className="text-2xs text-text-3">Placeholder signature</div>
-                <div className="num break-all text-xs text-text-2">{task.reward.signature}</div>
-                <span className="mt-1 inline-flex items-center gap-1 text-2xs text-text-3">
-                  <ExternalLink className="size-3" /> Explorer link appears here once Solana Devnet is connected
-                </span>
-              </div>
-            )}
-          </div>
         </section>
       )}
 
@@ -400,7 +370,7 @@ export default function MaintenancePage() {
 
   return (
     <div className="flex h-full flex-col">
-      <PageHeader title="Community maintenance" description="Volunteer tasks for obstructed hydrants. Bounties and verification are simulated in this build." />
+      <PageHeader title="Community maintenance" description="Volunteer tasks for obstructed hydrants. Verification is simulated in this build." />
       <div className="flex min-h-0 flex-1">
         <aside className={cn("flex w-full shrink-0 flex-col border-r border-line md:w-80", selected && "hidden md:flex")}>
           <Tabs.Root value={tab} onValueChange={setTab}>
@@ -439,10 +409,7 @@ export default function MaintenancePage() {
                     <div className="mt-1 truncate text-xs text-text-2">
                       {OBSTRUCTION_LABELS[t.obstructionType]} · {h ? addressLine(h) : ""}
                     </div>
-                    <div className="mt-1 flex justify-between text-2xs text-text-3">
-                      <span className="num">{t.bountyUsdc} USDC (sim)</span>
-                      <span className="num">open {duration(now - t.createdAt)}</span>
-                    </div>
+                    <div className="num mt-1 text-2xs text-text-3">open {duration(now - t.createdAt)}</div>
                   </button>
                 </li>
               );

@@ -5,10 +5,13 @@ import type {
   Alert,
   AlertKind,
   DeliveryRecord,
+  DeviceLink,
+  DeviceReading,
   Filters,
   Hydrant,
   HydrantStatus,
   Incident,
+  IncidentOrigin,
   LocationSource,
   MaintenanceTask,
   NotificationSubscription,
@@ -17,8 +20,9 @@ import type {
 } from "@/types";
 import { computeRisk, loadHydrants, riskLevelOf } from "@/services/hydrantService";
 import { dispatch } from "@/services/notificationService";
-import { readingAt } from "@/services/telemetryService";
-import { simulatedSignature, taskFromIncident, verify } from "@/services/maintenanceService";
+import { pushLiveReading, readingAt } from "@/services/telemetryService";
+import { detect, freshDetector } from "@/services/obstructionDetector";
+import { taskFromIncident, verify } from "@/services/maintenanceService";
 import { OBSTRUCTION_LABELS } from "@/services/analyticsService";
 import { addressLine, pickDetail } from "@/data/obstructions";
 import { uid } from "@/lib/utils";
@@ -67,6 +71,13 @@ interface State {
   copilotOpen: boolean;
   subscribeFor: string | null | "area";
   online: boolean;
+
+  sound: { enabled: boolean; voice: boolean };
+  /** The map hydrant the physical ESP32 node stands in for. */
+  deviceHydrantId: string | null;
+  /** What a confirmed block from the ESP32 is reported as. */
+  deviceObstruction: ObstructionType;
+  deviceLink: DeviceLink | null;
 }
 
 interface Actions {
@@ -81,7 +92,7 @@ interface Actions {
   toggle(key: "heatmap" | "satellite" | "buildings3d" | "sidebarCollapsed" | "demoPanelOpen" | "copilotOpen"): void;
   set<K extends keyof State>(key: K, value: State[K]): void;
 
-  simulateObstruction(id: string, type: ObstructionType, severity?: "warning" | "critical"): void;
+  simulateObstruction(id: string, type: ObstructionType, severity?: "warning" | "critical", opts?: { origin?: IncidentOrigin; detail?: string }): void;
   clearObstruction(id: string, note?: string): void;
   setOffline(id: string): void;
   restoreDevice(id: string): void;
@@ -99,6 +110,12 @@ interface Actions {
   submitEvidence(id: string): void;
   runVerification(id: string): void;
   reviewTask(id: string, approve: boolean): void;
+
+  setSound(patch: Partial<State["sound"]>): void;
+  bindDevice(hydrantId: string | null): void;
+  setDeviceLink(link: DeviceLink | null): void;
+  /** Feed one sensor packet through the detector; transitions raise the same alerts as everything else. */
+  ingestReading(r: DeviceReading): void;
 }
 
 export type AppStore = State & Actions;
@@ -149,6 +166,8 @@ export const useApp = create<AppStore>()(
       const updateTask = (id: string, fn: (t: MaintenanceTask) => MaintenanceTask) =>
         set((s) => ({ tasks: s.tasks.map((t) => (t.id === id ? fn(t) : t)) }));
 
+      let detector = freshDetector();
+
       return {
         loadState: "idle",
         hydrants: {},
@@ -171,6 +190,10 @@ export const useApp = create<AppStore>()(
         copilotOpen: false,
         subscribeFor: null,
         online: typeof navigator === "undefined" ? true : navigator.onLine,
+        sound: { enabled: true, voice: true },
+        deviceHydrantId: null,
+        deviceObstruction: "debris",
+        deviceLink: null,
 
         async init(forceRefresh) {
           if (get().loadState === "loading") return;
@@ -214,7 +237,7 @@ export const useApp = create<AppStore>()(
         toggle: (key) => set((s) => ({ [key]: !s[key] }) as Partial<State>),
         set: (key, value) => set({ [key]: value } as Partial<State>),
 
-        simulateObstruction(id, type, severity = "critical") {
+        simulateObstruction(id, type, severity = "critical", opts) {
           const s = get();
           const h = s.hydrants[id];
           if (!h || !h.monitored) return; // no sensor, nothing to detect
@@ -222,13 +245,13 @@ export const useApp = create<AppStore>()(
           let incidents = closeActive(s.incidents, id, "device", at);
           const existing = incidents.find((i) => i.hydrantId === id && i.kind === "obstruction" && i.status === "active");
           let incident: Incident;
-          const detail = existing?.obstructionType === type && existing.detail ? existing.detail : pickDetail(type, id, at);
+          const detail = opts?.detail ?? (existing?.obstructionType === type && existing.detail ? existing.detail : pickDetail(type, id, at));
           if (existing) {
             // Escalate / re-type the open incident instead of creating a duplicate.
             incident = { ...existing, obstructionType: type, severity, detail };
             incidents = incidents.map((i) => (i.id === existing.id ? incident : i));
           } else {
-            incident = { id: uid("INC"), hydrantId: id, kind: "obstruction", obstructionType: type, severity, status: "active", startedAt: at, origin: "demo", detail };
+            incident = { id: uid("INC"), hydrantId: id, kind: "obstruction", obstructionType: type, severity, status: "active", startedAt: at, origin: opts?.origin ?? "demo", detail };
             incidents = [...incidents, incident];
           }
           const status: HydrantStatus = severity === "critical" ? "blocked" : "warning";
@@ -332,20 +355,44 @@ export const useApp = create<AppStore>()(
           }, 1400);
         },
         reviewTask(id, approve) {
-          if (!approve) {
-            updateTask(id, (t) => ({ ...pushTimeline(t, "rejected", "Rejected by reviewer"), reward: { status: "none" } }));
-            return;
-          }
-          updateTask(id, (t) => ({ ...pushTimeline(t, "approved", "Approved by reviewer"), reward: { status: "pending" } }));
-          setTimeout(() => {
-            updateTask(id, (t) => ({ ...t, reward: { status: "simulated", signature: simulatedSignature(t.id) } }));
-          }, 1600);
+          updateTask(id, (t) =>
+            approve ? pushTimeline(t, "approved", "Approved by reviewer") : pushTimeline(t, "rejected", "Rejected by reviewer"),
+          );
+        },
+
+        setSound: (patch) => set((s) => ({ sound: { ...s.sound, ...patch } })),
+        bindDevice(hydrantId) {
+          detector = freshDetector();
+          set({ deviceHydrantId: hydrantId });
+        },
+        setDeviceLink: (deviceLink) => set({ deviceLink }),
+        ingestReading(r) {
+          const s = get();
+          if (s.deviceLink) set({ deviceLink: { ...s.deviceLink, status: "connected", error: undefined, packets: s.deviceLink.packets + 1, last: r } });
+          const id = s.deviceHydrantId;
+          if (!id || !s.hydrants[id]) return;
+          pushLiveReading(id, { t: r.t, distanceCm: r.distanceCm, temperatureC: r.temperatureC });
+          if (s.hydrants[id].status === "offline") get().restoreDevice(id);
+
+          const { state, transition } = detect(detector, get().hydrants[id].status, r.distanceCm, r.t);
+          detector = state;
+          const detail = `Object ${Math.round(r.distanceCm)} cm in front of the sensor`;
+          if (transition === "warning") get().simulateObstruction(id, s.deviceObstruction, "warning", { origin: "device", detail });
+          else if (transition === "blocked") get().simulateObstruction(id, s.deviceObstruction, "critical", { origin: "device", detail });
+          else if (transition === "clear") get().clearObstruction(id, "Sensor reports clear (ESP32)");
         },
       };
     },
     {
       name: "hh:app:v1",
-      partialize: (s) => ({ subscriptions: s.subscriptions, deliveries: s.deliveries, sidebarCollapsed: s.sidebarCollapsed }),
+      partialize: (s) => ({
+        subscriptions: s.subscriptions,
+        deliveries: s.deliveries,
+        sidebarCollapsed: s.sidebarCollapsed,
+        sound: s.sound,
+        deviceHydrantId: s.deviceHydrantId,
+        deviceObstruction: s.deviceObstruction,
+      }),
     },
   ),
 );

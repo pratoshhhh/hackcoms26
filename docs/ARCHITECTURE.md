@@ -11,7 +11,7 @@
  └──────────────┘                  │                          ├─ REST API  ◀──────── Next.js dashboard      │
  ┌──────────────┐   MQTT / HTTP    │                          ├─ WebSocket /ws ─────▶ (live map, alerts)    │
  │ Simulator    │ ───────────────▶ │                          ├─ async worker: Gemini + OpenCV (off path)   │
- └──────────────┘ source=simulated │                          └─ Solana Devnet payout (reviewer-gated)      │
+ └──────────────┘ source=simulated │                          └─ reviewer approval (human final call)      │
                                    └──────────────┬──────────────────────────┬──────────────────────────────┘
                                                   │ asyncpg                  │ S3 API (optional)
                                         ┌─────────▼─────────┐      ┌─────────▼──────────┐
@@ -21,7 +21,7 @@
 ```
 
 **Critical alert path (target < 2 s):** ESP32 → RabbitMQ → FastAPI ingest → state machine → DB write + WS broadcast.
-Gemini, OpenCV, and Solana are **never** on this path.
+Gemini and OpenCV are **never** on this path.
 
 ### Hydrant state machine
 
@@ -54,8 +54,7 @@ Full DDL in [`backend/db/init/001_schema.sql`](../backend/db/init/001_schema.sql
 | `sensor_readings` | **hypertable** (`time`) | distance_cm, temp_c, rssi, source |
 | `hydrant_state_changes` | **hypertable** | every state transition (for timelines) |
 | `incidents` | regular | one per obstruction; opened_at, sensor_cleared_at, resolved_at, status, AI summary |
-| `volunteer_claims` | regular | volunteer, wallet, before/after photo URLs, Gemini JSON, review status |
-| `bounty_payouts` | regular | claim → Solana tx signature, amount, status |
+| `volunteer_claims` | regular | volunteer, before/after photo URLs, Gemini JSON, review status |
 | `readings_1m` | **continuous aggregate** | per-minute min/avg distance, avg temp |
 | `incident_daily` | **continuous aggregate** | obstructions per hydrant per day |
 | `hydrant_risk` | view | frequency × avg clear time × recency → risk score |
@@ -107,11 +106,10 @@ Base: `/api/v1`. Reviewer-only endpoints require `X-Reviewer-Key`.
 | GET | `/hydrants/{id}/qr` | QR PNG encoding claim URL |
 | GET | `/incidents?status=open` | incident list |
 | GET | `/incidents/{id}` | detail + timeline + claims |
-| POST | `/incidents/{id}/claim` | volunteer claims task `{volunteer_name, wallet}` |
+| POST | `/incidents/{id}/claim` | volunteer claims task `{volunteer_name}` |
 | POST | `/claims/{id}/photos` | multipart before/after; `hydrant_qr_token` required |
 | GET | `/claims/{id}` | claim incl. Gemini result + sensor cross-check |
-| POST | `/claims/{id}/review` | `{approve: bool, note}` — reviewer → triggers payout |
-| GET | `/payouts` | payouts with signatures + explorer links |
+| POST | `/claims/{id}/review` | `{approve: bool, note}` — reviewer → resolves incident |
 | GET | `/analytics/summary` | totals, avg time-to-clear, active incidents |
 | GET | `/analytics/risk` | hydrant risk ranking |
 | GET | `/analytics/frequency?days=30` | obstructions per day |
@@ -130,8 +128,6 @@ Endpoint `GET /ws`. Server → client envelope: `{ "type": "...", "ts": "...", "
 | `incident.resolved` | `{incident_id, time_to_clear_s}` |
 | `claim.created` | claim object |
 | `claim.verification_ready` | `{claim_id, gemini, sensor_check, recommendation}` |
-| `payout.submitted` / `payout.confirmed` / `payout.failed` | `{payout_id, signature, explorer_url}` |
-
 Client → server: `{"type":"ping"}` only. Dashboard re-fetches REST state on reconnect.
 
 ## 7. Integration responsibilities
@@ -157,27 +153,24 @@ Client → server: `{"type":"ping"}` only. Dashboard re-fetches REST state on re
 ```
 Final recommendation = Gemini **AND** sensor CLEAR for ≥ N readings **AND** OpenCV sanity (images differ, not duplicates, not blank). A human reviewer always clicks approve.
 
-**Solana** — Devnet only. Treasury keypair holds a self-minted SPL token labeled "demo USDC". On reviewer approval, backend sends an SPL transfer with a memo `halo:{incident_id}:{claim_id}`. Store signature; dashboard links to `https://explorer.solana.com/tx/{sig}?cluster=devnet`. No custom program — task/claim state lives in Postgres; the memo makes it auditable on-chain. Idempotency: unique `claim_id` on `bounty_payouts`.
-
 ## 8. 24-hour roadmap (3–4 people)
 
 | Hours | Hardware/firmware | Backend | Frontend | Data/Integrations |
 |---|---|---|---|---|
-| 0–2 | Wire sensor, read distance | Compose up, schema, `/health` | Next.js shell, map with static markers | Vultr VM, Tiger Data service, Gemini key, Solana devnet wallet |
+| 0–2 | Wire sensor, read distance | Compose up, schema, `/health` | Next.js shell, map with static markers | Vultr VM, Tiger Data service, Gemini key |
 | 2–6 | MQTT publish to Vultr broker | Consumer → state machine → DB → WS | Live markers via WS, incident sidebar | Simulator; seed 10 hydrants |
 | 6–10 | Buzzer/LED, calibration, LWT | Incidents + dedupe, OFFLINE sweeper | Hydrant detail panel + chart | Continuous aggregates, risk view |
 | 10–14 | Enclosure, stability test | Claims + photo upload + QR | Task board, claim flow | Gemini verify worker + OpenCV |
-| 14–18 | — | Review + Solana payout | Verify page, rewards page | Solana SPL transfer + memo |
+| 14–18 | — | Reviewer approval + incident resolution | Verify page | — |
 | 18–21 | Full physical run ×5 | Hardening, retries, logging | Polish, real-vs-sim badges | Backfill realistic history for analytics |
 | 21–24 | — | **Feature freeze.** Rehearse demo 3×, record backup video | | |
 
 **Top failure points (mitigate early):**
 1. Venue Wi-Fi blocks port 1883 → HTTP `/ingest/telemetry` fallback + phone hotspot.
 2. Ultrasonic noise → median filtering + hysteresis + calibrated thresholds.
-3. Devnet RPC rate limits / airdrop failures → pre-fund treasury the day before; retry with backoff.
-4. Gemini latency → async, UI shows "analyzing…", never blocks alerting.
-5. Mixed content (HTTPS frontend → WS) → serve backend behind Caddy with TLS, or keep both HTTP.
-6. Empty analytics → seed historical simulated incidents, clearly labeled.
+3. Gemini latency → async, UI shows "analyzing…", never blocks alerting.
+4. Mixed content (HTTPS frontend → WS) → serve backend behind Caddy with TLS, or keep both HTTP.
+5. Empty analytics → seed historical simulated incidents, clearly labeled.
 
 ## 9. 90-second demo script
 
@@ -188,5 +181,5 @@ Final recommendation = Gemini **AND** sensor CLEAR for ≥ N readings **AND** Op
 | 25–40 s | Click hydrant: live chart, history, risk rank | "Every reading lands in Tiger Data hypertables. Continuous aggregates rank hydrants by obstruction frequency and clearing time." |
 | 40–55 s | Phone: task board → claim → scan QR → upload before photo; remove box; upload after photo | "Any neighbor can claim the task. They scan the hydrant's QR code to prove they're there." |
 | 55–70 s | Verify page shows Gemini JSON + sensor check both green | "Gemini classifies the obstruction and checks it's gone — but we never trust AI alone. The sensor must agree." |
-| 70–85 s | Reviewer clicks Approve → Solana signature appears → open explorer | "A city reviewer approves, and a Devnet bounty is paid instantly, verifiable on-chain." |
-| 85–90 s | Back to map, green; time-to-clear recorded | "Detected, cleared, verified, rewarded — in under two minutes." |
+| 70–85 s | Reviewer clicks Approve → incident resolves | "A city reviewer makes the final call, and the incident closes with a full audit trail." |
+| 85–90 s | Back to map, green; time-to-clear recorded | "Detected, cleared, verified — in under two minutes." |
