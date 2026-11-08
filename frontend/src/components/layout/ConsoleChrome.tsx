@@ -152,7 +152,7 @@ export function TopRight() {
           <span className="hidden md:inline">Demo</span>
         </Button>
       </Tip>
-      <Tip content="Ask questions about hydrants and incidents (simulated)">
+      <Tip content="Ask questions about hydrants and incidents">
         <Button variant="ghost" size="sm" className="h-8 whitespace-nowrap" onClick={() => toggle("copilotOpen")}>
           Hydrant Intelligence
         </Button>

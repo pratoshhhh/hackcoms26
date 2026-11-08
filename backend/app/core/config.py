@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     device_shared_secret: str = "change-me"
 
     gemini_api_key: str = ""
-    gemini_model: str = "gemini-2.5-flash"
+    gemini_model: str = "gemini-3.8-flash"
 
     solana_rpc_url: str = "https://api.devnet.solana.com"
     solana_treasury_keypair_path: str = ""

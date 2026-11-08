@@ -88,9 +88,15 @@ export default function CopilotDrawer() {
     setMsgs((m) => [...m, { id: Date.now(), role: "user", text: question }]);
     setBusy(true);
     const s = useApp.getState();
-    const reply = await geminiService.ask(question, { hydrants, incidents: s.incidents, selected: s.selectedId ? s.hydrants[s.selectedId] : null, now: Date.now() });
-    setMsgs((m) => [...m, { id: Date.now() + 1, role: "assistant", text: reply.text, reply }]);
-    setBusy(false);
+    try {
+      const reply = await geminiService.ask(question, { hydrants, incidents: s.incidents, selected: s.selectedId ? s.hydrants[s.selectedId] : null, now: Date.now() });
+      setMsgs((m) => [...m, { id: Date.now() + 1, role: "assistant", text: reply.text, reply }]);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Could not reach Hydrant Intelligence.";
+      setMsgs((m) => [...m, { id: Date.now() + 1, role: "assistant", text: message }]);
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -106,7 +112,7 @@ export default function CopilotDrawer() {
         <div>
           <h2 className="text-base font-semibold">Hydrant Intelligence</h2>
           <p className="text-2xs text-text-3">
-            Simulated responses from seeded data · Gemini not connected
+            Answers from Gemini
             {selected && (
               <>
                 {" "}· Context: <span className="num">{selected.id}</span>
@@ -143,7 +149,6 @@ export default function CopilotDrawer() {
             <div key={m.id} className="mr-4 text-sm text-text-1">
               <p>{m.text}</p>
               {m.reply?.cards.map((c) => <Card key={c.title} card={c} />)}
-              <p className="mt-1 text-2xs text-text-3">Simulated response</p>
             </div>
           ),
         )}
