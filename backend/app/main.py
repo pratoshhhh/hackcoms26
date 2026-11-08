@@ -14,6 +14,11 @@ except Exception:
     ask_router = None
 
 try:
+    from app.api.notify import router as notify_router
+except Exception:
+    notify_router = None
+
+try:
     from app.db import close_db, init_db, ping
 except Exception:
     close_db = init_db = ping = None
@@ -39,6 +44,8 @@ app = FastAPI(title="Hydrant Halo API", version="0.1.0", lifespan=lifespan)
 
 if ask_router is not None:
     app.include_router(ask_router)
+if notify_router is not None:
+    app.include_router(notify_router)
 
 app.add_middleware(
     CORSMiddleware,

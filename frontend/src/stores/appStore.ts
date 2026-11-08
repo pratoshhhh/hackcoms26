@@ -19,7 +19,7 @@ import type {
   TaskStatus,
 } from "@/types";
 import { computeRisk, loadHydrants, riskLevelOf } from "@/services/hydrantService";
-import { dispatch } from "@/services/notificationService";
+import { DEMO_SMS_KINDS, deliver, dispatch, type DeliveryUpdate } from "@/services/notificationService";
 import { pushLiveReading, readingAt } from "@/services/telemetryService";
 import { detect, freshDetector } from "@/services/obstructionDetector";
 import { taskFromIncident, verify } from "@/services/maintenanceService";
@@ -78,6 +78,8 @@ interface State {
   /** What a confirmed block from the ESP32 is reported as. */
   deviceObstruction: ObstructionType;
   deviceLink: DeviceLink | null;
+  /** Text TWILIO_DEMO_TO_NUMBER when the ESP32's hydrant is blocked, cleared, or goes offline. */
+  textDemoPhone: boolean;
 }
 
 interface Actions {
@@ -135,11 +137,18 @@ const ALERT_COPY: Record<AlertKind, (h: Hydrant, t?: ObstructionType | null) => 
 export const useApp = create<AppStore>()(
   persist(
     (set, get) => {
-      /** Push an alert, fan out simulated deliveries, return it. */
+      const updateDelivery: DeliveryUpdate = (id, patch) =>
+        set((s) => ({ deliveries: s.deliveries.map((d) => (d.id === id ? { ...d, ...patch } : d)) }));
+
+      /** Push an alert, fan out deliveries (SMS is real, email simulated), return it. */
       const raise = (kind: AlertKind, h: Hydrant, incidentId?: string, t?: ObstructionType | null): Alert => {
         const copy = ALERT_COPY[kind](h, t);
         const alert: Alert = { id: uid("ALR"), kind, hydrantId: h.id, incidentId, ...copy, createdAt: Date.now(), read: false };
-        const deliveries = dispatch(alert, h, get().subscriptions);
+        const s = get();
+        const deliveries = dispatch(alert, h, s.subscriptions, updateDelivery);
+        if (s.textDemoPhone && DEMO_SMS_KINDS.includes(kind)) {
+          deliveries.push(deliver("sms", undefined, "Demo phone", alert, h, "demo", updateDelivery));
+        }
         set((s) => ({ alerts: [alert, ...s.alerts].slice(0, 200), deliveries: [...deliveries, ...s.deliveries].slice(0, 500) }));
         return alert;
       };
@@ -194,6 +203,7 @@ export const useApp = create<AppStore>()(
         deviceHydrantId: null,
         deviceObstruction: "debris",
         deviceLink: null,
+        textDemoPhone: true,
 
         async init(forceRefresh) {
           if (get().loadState === "loading") return;
@@ -392,6 +402,7 @@ export const useApp = create<AppStore>()(
         sound: s.sound,
         deviceHydrantId: s.deviceHydrantId,
         deviceObstruction: s.deviceObstruction,
+        textDemoPhone: s.textDemoPhone,
       }),
     },
   ),

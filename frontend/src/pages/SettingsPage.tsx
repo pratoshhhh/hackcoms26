@@ -20,11 +20,12 @@ function Block({ id, title, description, children }: { id?: string; title: strin
   );
 }
 
-const INTEGRATIONS = [
-  ["Hydrant Halo API (Vultr)", "REST + WebSocket for live telemetry"],
-  ["Tiger Data", "Time-series readings, incidents, analytics"],
-  ["Gemini", "Photo verification and Hydrant Intelligence"],
-  ["Resend / Twilio", "Email and SMS delivery"],
+const INTEGRATIONS: [string, string, boolean][] = [
+  ["Hydrant Halo API (Vultr)", "REST + WebSocket for live telemetry", false],
+  ["Tiger Data", "Time-series readings, incidents, analytics", false],
+  ["Gemini", "Photo verification and Hydrant Intelligence", false],
+  ["Twilio", "SMS alerts", true],
+  ["Resend", "Email delivery", false],
 ];
 
 export default function SettingsPage() {
@@ -129,15 +130,15 @@ export default function SettingsPage() {
 
       <Block title="Integrations" description="Each one is behind a service interface in src/services and can be swapped without touching components.">
         <ul className="max-w-2xl divide-y divide-line rounded-lg border border-line bg-surface-1">
-          {INTEGRATIONS.map(([name, role]) => (
+          {INTEGRATIONS.map(([name, role, live]) => (
             <li key={name} className="flex items-center justify-between gap-4 px-4 py-2 text-sm">
               <span>
                 {name}
                 <span className="block text-xs text-text-3">{role}</span>
               </span>
               <span className="inline-flex items-center gap-2 text-xs text-text-2">
-                <span className="size-2 rounded-full border border-muted" aria-hidden />
-                Not connected · mock
+                <span className={live ? "size-2 rounded-full bg-ok" : "size-2 rounded-full border border-muted"} aria-hidden />
+                {live ? "Connected" : "Not connected · mock"}
               </span>
             </li>
           ))}
