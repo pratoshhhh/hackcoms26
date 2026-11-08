@@ -1,0 +1,35 @@
+/*
+ * Design tokens - the ONLY place raw color values live (see DESIGN.md section 2).
+ * Light theme. Gray roles follow the Geist scale: canvas, surface, hover, active,
+ * hairline borders, two text greys. One blue accent for focus/selection/links only.
+ * Stored as RGB channels so Tailwind opacity modifiers work: bg-crit/10.
+ */
+:root {
+  --bg: 250 250 249;          /* #fafaf9  app canvas (warm off-white) */
+  --surface-1: 255 255 255;   /* #ffffff  panels, cards, floating chrome */
+  --surface-2: 245 245 244;   /* #f5f5f4  hover / subtle fill */
+  --surface-3: 236 236 233;   /* #ececE9  active / pressed / tracks */
+  --line: 229 229 226;        /* #e5e5e2  hairline borders, dividers */
+  --line-strong: 211 211 206; /* #d3d3ce  input borders, hover borders */
+  --text-1: 23 23 23;         /* #171717  primary text, primary buttons */
+  --text-2: 82 82 82;         /* #525252  secondary text */
+  --text-3: 115 115 115;      /* #737373  tertiary, still 4.7:1 on white */
+  --accent: 0 102 204;        /* #0066cc  focus, selection, links - nothing else */
+  --ok: 21 128 61;            /* #15803d  Accessible */
+  --warn: 180 83 9;           /* #b45309  Possible obstruction */
+  --crit: 200 30 30;          /* #c81e1e  Blocked */
+  --muted: 120 120 128;       /* #787880  Offline / unmonitored */
+
+  /* 3D twin materials (illustrative model only) */
+  --twin-body: 186 52 46;
+  --twin-cap: 190 150 60;
+  --twin-ground: 232 232 229;
+  --twin-snow: 252 252 253;
+  --twin-vehicle: 92 104 120;
+  --twin-debris: 140 112 84;
+
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+  --shadow-float: 0 1px 2px rgb(23 23 23 / 0.06), 0 8px 24px -4px rgb(23 23 23 / 0.1);
+  --shadow-raise: 0 1px 2px rgb(23 23 23 / 0.05), 0 2px 6px -2px rgb(23 23 23 / 0.06);
+  color-scheme: light;
+}

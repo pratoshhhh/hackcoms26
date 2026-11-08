@@ -21,12 +21,12 @@ hackcoms26/
 │   ├── rabbitmq/       RabbitMQ plugin + config
 │   ├── simulator/      Sensor simulator (dev/demo only, tagged source=simulated)
 │   └── tests/
-├── frontend/           Next.js 14 + TypeScript + Tailwind + Leaflet dashboard
+├── frontend/           React + Vite + TypeScript + Tailwind + MapLibre + three.js console (see frontend/README.md)
 │   └── src/
-│       ├── app/        routes: / (map), /incidents, /tasks, /verify, /rewards, /analytics
-│       ├── components/ map, incidents, charts, tasks, verify
-│       ├── lib/        API client, WebSocket hook
-│       └── types/      shared TS types
+│       ├── pages/      / (landing), /map, /incidents, /analytics, /maintenance, /settings
+│       ├── components/ layout, map, hydrants, charts, three, ai, maintenance, ui
+│       ├── services/   mock services behind swappable interfaces
+│       └── stores/     single Zustand store
 ├── firmware/           ESP32 Arduino sketch (ultrasonic + temp + buzzer/LED + MQTT)
 ├── docs/ARCHITECTURE.md  architecture, schemas, topics, API, WS events, roadmap, demo script
 └── docker-compose.yml  RabbitMQ (MQTT) + TimescaleDB (local) + backend
@@ -44,7 +44,7 @@ cd backend && pip install -r requirements.txt
 python -m simulator.simulate --hydrants 5
 
 # frontend
-cd frontend && npm install && npm run dev   # http://localhost:3000
+cd frontend && npm install && npm run dev   # http://localhost:5173
 ```
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full plan.
@@ -56,7 +56,7 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full plan.
 | RabbitMQ + MQTT plugin | Device messaging broker |
 | FastAPI / Uvicorn | REST + WebSocket backend |
 | PostgreSQL + TimescaleDB | Time-series storage (hosted on Tiger Data) |
-| Leaflet + OpenStreetMap | Live map |
+| MapLibre GL + OpenStreetMap | Live map and hydrant locations |
 | OpenCV | Image sanity checks / before-after diff |
-| Next.js, Tailwind CSS | Dashboard UI |
+| React, Vite, Tailwind CSS, three.js | Console UI and 3D twin |
 | Docker Compose | Reproducible deployment on Vultr |

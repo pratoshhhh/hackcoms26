@@ -31,3 +31,9 @@ secrets.h
 
 
 frontend/package-lock.json
+# build / deploy
+dist/
+.vercel
+
+# private notes
+docs/REALTIME_NOTIFICATIONS.md
