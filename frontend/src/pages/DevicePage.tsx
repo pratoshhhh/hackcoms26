@@ -102,7 +102,7 @@ function TextAlertsCard({ hydrant }: { hydrant: Hydrant | undefined }) {
     if (!hydrant) return;
     setTesting(true);
     try {
-      const r = await sendSms(undefined, `Hydrant Halo test: alerts for hydrant ${hydrant.id} at ${addressLine(hydrant)} will be texted to this phone.`);
+      const r = await sendSms(undefined, `Fire Fighters test: alerts for hydrant ${hydrant.id} at ${addressLine(hydrant)} will be texted to this phone.`);
       toast.success("Test text sent", {
         description: r.via === "trial_template" ? `To ${r.to}. Trial account, so Twilio sent its built-in alert text.` : `To ${r.to}`,
       });

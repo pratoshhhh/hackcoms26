@@ -1,4 +1,4 @@
-# Hydrant Halo — Backend
+# Fire Fighters — Backend
 
 FastAPI service deployed on Vultr via Docker Compose.
 

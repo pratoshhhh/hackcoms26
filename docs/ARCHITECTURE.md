@@ -1,4 +1,4 @@
-# Hydrant Halo — Architecture & Implementation Plan
+# Fire Fighters — Architecture & Implementation Plan
 
 ## 1. System architecture & data flow
 
@@ -176,7 +176,7 @@ Final recommendation = Gemini **AND** sensor CLEAR for ≥ N readings **AND** Op
 
 | Time | Action | Say |
 |---|---|---|
-| 0–10 s | Dashboard full screen, all green | "Firefighters lose minutes when hydrants are buried or blocked. Hydrant Halo watches them 24/7." |
+| 0–10 s | Dashboard full screen, all green | "Firefighters lose minutes when hydrants are buried or blocked. Fire Fighters watches them 24/7." |
 | 10–25 s | Place a box in front of ESP32; buzzer + LED fire; marker goes yellow → red; incident pops in sidebar | "Ultrasonic + temp on an ESP32, MQTT into RabbitMQ on Vultr. Hysteresis means no false alarms — confirmed blocks only." |
 | 25–40 s | Click hydrant: live chart, history, risk rank | "Every reading lands in Tiger Data hypertables. Continuous aggregates rank hydrants by obstruction frequency and clearing time." |
 | 40–55 s | Phone: task board → claim → scan QR → upload before photo; remove box; upload after photo | "Any neighbor can claim the task. They scan the hydrant's QR code to prove they're there." |

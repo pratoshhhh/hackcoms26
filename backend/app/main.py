@@ -40,7 +40,7 @@ async def lifespan(_app: FastAPI):
         await close_db()
 
 
-app = FastAPI(title="Hydrant Halo API", version="0.1.0", lifespan=lifespan)
+app = FastAPI(title="Fire Fighters API", version="0.1.0", lifespan=lifespan)
 
 if ask_router is not None:
     app.include_router(ask_router)

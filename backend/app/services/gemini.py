@@ -17,7 +17,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from app.core.config import settings
 from app.db.context import load_ops_snapshot
 
-_SYSTEM = """You answer questions about Hydrant Halo operations.
+_SYSTEM = """You answer questions about Fire Fighters operations.
 
 You receive two JSON sources:
 - database: rows from Postgres (hydrants, risk scores, incidents, recent BLOCKED transitions). Use these when they contain rows.

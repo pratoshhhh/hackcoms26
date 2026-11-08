@@ -21,7 +21,7 @@ function Block({ id, title, description, children }: { id?: string; title: strin
 }
 
 const INTEGRATIONS: [string, string, boolean][] = [
-  ["Hydrant Halo API (Vultr)", "REST + WebSocket for live telemetry", false],
+  ["Fire Fighters API (Vultr)", "REST + WebSocket for live telemetry", false],
   ["Tiger Data", "Time-series readings, incidents, analytics", false],
   ["Gemini", "Photo verification and Hydrant Intelligence", false],
   ["Twilio", "SMS alerts", true],

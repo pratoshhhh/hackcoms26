@@ -78,9 +78,9 @@ export default function LandingPage() {
           </div>
 
           <header className="pointer-events-none relative z-10 mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-            <Link to="/" className="pointer-events-auto flex items-center gap-2" aria-label="Hydrant Halo home">
+            <Link to="/" className="pointer-events-auto flex items-center gap-2" aria-label="Fire Fighters home">
               <Logo />
-              <span className="text-base font-semibold tracking-tight">Hydrant Halo</span>
+              <span className="text-base font-semibold tracking-tight">Fire Fighters</span>
             </Link>
             <Button variant="primary" asChild className="pointer-events-auto">
               <Link to="/map">Open live map</Link>
@@ -174,7 +174,7 @@ export default function LandingPage() {
 
       <footer className="border-t border-line">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-6 text-xs text-text-3">
-          <span>Hydrant Halo · hackathon prototype</span>
+          <span>Fire Fighters · hackathon prototype</span>
           <span>Map data © OpenStreetMap contributors · Basemap © CARTO</span>
         </div>
       </footer>

@@ -1,4 +1,4 @@
--- Hydrant Halo schema (TimescaleDB / Tiger Data)
+-- Fire Fighters schema (TimescaleDB / Tiger Data)
 CREATE EXTENSION IF NOT EXISTS timescaledb;
 
 -- ---------- Hydrants ----------

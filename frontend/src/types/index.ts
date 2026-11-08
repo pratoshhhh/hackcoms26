@@ -1,4 +1,4 @@
-// Domain types for Hydrant Halo. These mirror the backend contract in docs/ARCHITECTURE.md
+// Domain types for Fire Fighters. These mirror the backend contract in docs/ARCHITECTURE.md
 // so mock services can be swapped for real API clients without touching components.
 
 export type HydrantStatus = "clear" | "warning" | "blocked" | "offline";

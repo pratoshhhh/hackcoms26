@@ -12,7 +12,7 @@ import urllib.parse
 import urllib.request
 
 PATH = "public/data/osm-rochester-hydrants.json"
-UA = "HydrantHalo/0.1 (hackathon prototype; https://github.com/pratoshhhh/hackcoms26)"
+UA = "FireFighters/0.1 (hackathon prototype; https://github.com/pratoshhhh/hackcoms26)"
 
 
 def dist_m(lat1, lon1, lat2, lon2):

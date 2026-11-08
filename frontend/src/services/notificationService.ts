@@ -41,7 +41,7 @@ export const providers: Record<Channel, NotificationProvider> = {
 /** Plain-ASCII text so carriers keep the 160-character GSM segment size. */
 export function smsText(alert: Alert, h: Hydrant): string {
   const label = h.obstructionType && ["blocked", "warning", "report"].includes(alert.kind) ? `${OBSTRUCTION_LABELS[h.obstructionType]}. ` : "";
-  return `Hydrant Halo: ${alert.title}. ${label}${alert.body} (${fmtTime(alert.createdAt)})`
+  return `Fire Fighters: ${alert.title}. ${label}${alert.body} (${fmtTime(alert.createdAt)})`
     .replace(/\s*·\s*/g, " - ")
     .replace(/[—–]/g, "-")
     .replace(/[^\x20-\x7E\n]/g, "");

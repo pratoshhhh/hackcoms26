@@ -21,7 +21,7 @@ function RouteError() {
         <p className="font-medium text-text-1">Something went wrong on this screen.</p>
         <p className="mt-1 text-text-2">Your subscriptions are saved. Reload to restore the live view.</p>
         <button className="mt-3 text-accent hover:underline" onClick={() => window.location.reload()}>
-          Reload Hydrant Halo
+          Reload Fire Fighters
         </button>
       </div>
     </div>
