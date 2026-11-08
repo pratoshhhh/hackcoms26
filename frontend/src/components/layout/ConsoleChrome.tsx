@@ -9,7 +9,6 @@ import { SearchBox } from "./SearchBox";
 import { NotificationList } from "@/components/notifications/NotificationList";
 import { clearHydrantCache } from "@/services/hydrantService";
 import { cn } from "@/lib/utils";
-import { IntelligenceMark } from "@/components/ai/HydrantIntelligence";
 
 export function Logo({ className }: { className?: string }) {
   return (
@@ -143,7 +142,6 @@ function AccountMenu() {
 export function TopRight() {
   const toggle = useApp((s) => s.toggle);
   const demoOpen = useApp((s) => s.demoPanelOpen);
-  const intelOpen = useApp((s) => s.copilotOpen);
   return (
     <div className="float pointer-events-auto flex h-11 items-center gap-1 rounded-lg px-1">
       <StatusPill />
@@ -155,9 +153,8 @@ export function TopRight() {
         </Button>
       </Tip>
       <Tip content="Ask questions about hydrants and incidents (simulated)">
-        <Button variant="ghost" size="sm" className={cn("h-8 gap-2", intelOpen && "bg-surface-3 text-text-1")} onClick={() => toggle("copilotOpen")} aria-pressed={intelOpen} aria-label="Hydrant Intelligence">
-          <IntelligenceMark className="size-4 rounded-[4px]" />
-          <span className="hidden lg:inline">Intelligence</span>
+        <Button variant="ghost" size="sm" className="h-8 whitespace-nowrap" onClick={() => toggle("copilotOpen")}>
+          Hydrant Intelligence
         </Button>
       </Tip>
       <BellMenu />
