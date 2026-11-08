@@ -131,8 +131,14 @@ class MqttIngest:
             return None
 
         previous = self.latest.get(report.hydrant_id)
+        # A rebooted board starts its sequence over. Keep the new reading.
         if previous is not None and report.sequence < previous.sequence:
-            return None
+            logger.info(
+                "hydrant %s sequence restarted %s -> %s",
+                report.hydrant_id,
+                previous.sequence,
+                report.sequence,
+            )
 
         self.latest[report.hydrant_id] = report
         self.received += 1

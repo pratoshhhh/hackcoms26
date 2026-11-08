@@ -1,18 +1,15 @@
 /**
  * notificationService — decides who should be told about an alert and sends it.
  *
- *   - Twilio (SMS)   — real, through POST /api/v1/notify/sms (credentials stay on the server).
+ *   - Twilio (SMS)   — off for now. Alerts stay on the site and are not texted.
  *   - Resend (email) — still simulated; no API key yet.
  */
 import type { Alert, AlertKind, Channel, DeliveryRecord, Hydrant, NotificationSubscription } from "@/types";
 import { uid } from "@/lib/utils";
 import { OBSTRUCTION_LABELS } from "./analyticsService";
-import { sendSms } from "./smsService";
 import { fmtTime } from "@/utils/format";
 
 type SendResult = { status: "simulated" | "sent"; note?: string } | { status: "failed"; error: string };
-
-const TRIAL_NOTE = "Trial account: Twilio sent its built-in alert text, not this alert's wording.";
 
 export interface NotificationProvider {
   channel: Channel;
@@ -34,14 +31,9 @@ export const providers: Record<Channel, NotificationProvider> = {
   sms: {
     channel: "sms",
     name: "twilio",
-    live: true,
-    async send(to, _subject, body) {
-      try {
-        const sent = await sendSms(to, body);
-        return { status: "sent", note: sent.via === "trial_template" ? TRIAL_NOTE : undefined };
-      } catch (e) {
-        return { status: "failed", error: (e as Error).message };
-      }
+    live: false,
+    async send() {
+      return { status: "simulated" };
     },
   },
 };

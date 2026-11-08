@@ -27,14 +27,7 @@ export async function smsStatus(): Promise<SmsStatus> {
   return { configured: data.configured, demoTo: data.demo_to };
 }
 
-/** With no `to`, the server sends to TWILIO_DEMO_TO_NUMBER. Resolves with the masked recipient. */
-export async function sendSms(to: string | undefined, body: string): Promise<{ sid: string; to: string; via: string }> {
-  const res = await fetch("/api/v1/notify/sms", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ to, body }),
-    signal: AbortSignal.timeout(20_000),
-  });
-  if (!res.ok) throw new Error(await errorText(res));
-  return (await res.json()) as { sid: string; to: string; via: string };
+/** Texts are off. This rejects before calling Twilio. */
+export async function sendSms(_to: string | undefined, _body: string): Promise<{ sid: string; to: string; via: string }> {
+  throw new Error("Text messages are turned off");
 }
