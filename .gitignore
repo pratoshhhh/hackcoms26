@@ -28,3 +28,6 @@ Thumbs.db
 .vscode/
 .idea/
 secrets.h
+
+
+frontend/package-lock.json
