@@ -1,9 +1,20 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
+from app.db import close_db, init_db, ping
 
-app = FastAPI(title="Hydrant Halo API", version="0.1.0")
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    await init_db()
+    yield
+    await close_db()
+
+
+app = FastAPI(title="Hydrant Halo API", version="0.1.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -15,8 +26,17 @@ app.add_middleware(
 
 @app.get("/health")
 async def health() -> dict:
-    # TODO: report DB + RabbitMQ connectivity
-    return {"status": "ok", "mode": settings.app_mode}
+    # TODO: report RabbitMQ connectivity
+    database = "ok"
+    try:
+        await ping()
+    except Exception:
+        database = "error"
+    return {
+        "status": "ok" if database == "ok" else "degraded",
+        "mode": settings.app_mode,
+        "database": database,
+    }
 
 
 # Routers (to be implemented):
