@@ -32,9 +32,10 @@ export function parseDeviceLine(line: string, t = Date.now()): DeviceReading | n
   if (raw.startsWith("{")) {
     try {
       const o = JSON.parse(raw) as Record<string, unknown>;
-      distance = num(o.distance_cm ?? o.distanceCm ?? o.distance);
-      temp = num(o.temp_c ?? o.temperatureC ?? o.temp);
-      deviceId = typeof o.hydrant_id === "string" ? o.hydrant_id : undefined;
+      distance = num(o.distance_cm ?? o.distanceCm ?? o.distance ?? o.sideDistanceCm ?? o.side_distance_cm ?? o.snowDistanceCm ?? o.snow_distance_cm);
+      temp = null;
+      const named = o.hydrant_id ?? o.hydrantId ?? o.deviceId;
+      deviceId = typeof named === "string" ? named : undefined;
     } catch {
       return null;
     }

@@ -1,7 +1,6 @@
-"""Sensor simulator for development/demo. Publishes MQTT telemetry tagged source=simulated.
+"""Publishes the same MQTT payload the ESP32 firmware sends.
 
 Usage: python -m simulator.simulate --hydrants 5 --host localhost
-Full scenario logic (block/clear on keypress, offline drops) is TODO.
 """
 import argparse
 import json
@@ -26,24 +25,19 @@ def main() -> None:
     client.connect(args.host, args.port)
     client.loop_start()
 
-    ids = [f"SIM-{i:03d}" for i in range(1, args.hydrants + 1)]
+    ids = [f"H{i:03d}" for i in range(1, args.hydrants + 1)]
     seq = 0
     while True:
         seq += 1
         for hid in ids:
             payload = {
-                "v": 1,
-                "hydrant_id": hid,
-                "seq": seq,
-                "ts": int(time.time()),
-                "distance_cm": round(random.gauss(120, 3), 1),
-                "distance_samples": 5,
-                "temp_c": round(random.gauss(-1.5, 0.3), 1),
-                "rssi": random.randint(-75, -55),
-                "local_alarm": False,
-                "source": "simulated",
+                "deviceId": "SIM001",
+                "hydrantId": hid,
+                "sequence": seq,
+                "sideDistanceCm": round(random.gauss(150, 2), 2),
+                "snowDistanceCm": round(random.gauss(40, 2), 2),
             }
-            client.publish(f"halo/v1/hydrants/{hid}/telemetry", json.dumps(payload))
+            client.publish(f"hydrants/{hid}/telemetry", json.dumps(payload))
         time.sleep(args.interval)
 
 

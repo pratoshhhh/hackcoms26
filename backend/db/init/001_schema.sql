@@ -32,6 +32,9 @@ CREATE TABLE IF NOT EXISTS sensor_readings (
     source       TEXT NOT NULL CHECK (source IN ('device','simulated'))
 );
 SELECT create_hypertable('sensor_readings', 'time', if_not_exists => TRUE);
+ALTER TABLE sensor_readings ADD COLUMN IF NOT EXISTS device_id TEXT;
+ALTER TABLE sensor_readings ADD COLUMN IF NOT EXISTS side_distance_cm REAL;
+ALTER TABLE sensor_readings ADD COLUMN IF NOT EXISTS snow_distance_cm REAL;
 CREATE INDEX IF NOT EXISTS idx_readings_hydrant_time ON sensor_readings (hydrant_id, time DESC);
 
 ALTER TABLE sensor_readings SET (

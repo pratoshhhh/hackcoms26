@@ -1,9 +1,68 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useApp, useHydrantList } from "@/stores/appStore";
-import type { Hydrant } from "@/types";
-import { lastUpdateAt } from "@/services/telemetryService";
+import type { Hydrant, HydrantStatus } from "@/types";
+import { lastUpdateAt, pushLiveReading } from "@/services/telemetryService";
 import { announce, unlockAudio } from "@/services/alertAudio";
+
+type LiveReport = {
+  sequence: number;
+  distanceCm: number;
+  state: string;
+  deviceId?: string;
+};
+
+/** Paint the newest ESP32 report onto one real map pin. The board's id (H101) is not an OSM hydrant. */
+function applyLiveReport(report: LiveReport, packets: number) {
+  const s = useApp.getState();
+  let id = s.deviceHydrantId;
+  if (!id || !s.hydrants[id]) {
+    id = s.hydrantIds.find((hid) => s.hydrants[hid]?.monitored) ?? null;
+    if (!id) return;
+    s.bindDevice(id);
+    s.select(id);
+  }
+  const target: HydrantStatus =
+    report.state === "BLOCKED" ? "blocked" : report.state === "POSSIBLY_BLOCKED" ? "warning" : report.state === "OFFLINE" ? "offline" : "clear";
+  const reading = { t: Date.now(), distanceCm: report.distanceCm, temperatureC: null, deviceId: report.deviceId };
+  pushLiveReading(id, reading);
+  s.setDeviceLink({ kind: "websocket", status: "connected", packets, last: reading });
+  const current = useApp.getState().hydrants[id]?.status;
+  if (current === target) return;
+  const detail = `Side sensor ${Math.round(report.distanceCm)} cm`;
+  if (target === "blocked") s.simulateObstruction(id, s.deviceObstruction, "critical", { origin: "device", detail });
+  else if (target === "warning") s.simulateObstruction(id, s.deviceObstruction, "warning", { origin: "device", detail });
+  else if (target === "offline") s.setOffline(id);
+  else s.clearObstruction(id, "Side sensor reports clear");
+}
+
+/** Follow GET /api/v1/live so the map matches the ESP32 without a manual WebSocket connect. */
+export function useLiveDeviceFeed() {
+  const loadState = useApp((s) => s.loadState);
+  useEffect(() => {
+    if (loadState !== "ready") return;
+    let stop = false;
+    const tick = async () => {
+      try {
+        const res = await fetch("/api/v1/live");
+        if (!res.ok || stop) return;
+        const body = (await res.json()) as { received?: number; hydrants?: Record<string, LiveReport> };
+        const reports = Object.values(body.hydrants ?? {});
+        if (!reports.length) return;
+        const latest = reports.reduce((a, b) => (b.sequence > a.sequence ? b : a));
+        applyLiveReport(latest, body.received ?? 0);
+      } catch {
+        /* API not up yet */
+      }
+    };
+    void tick();
+    const timer = window.setInterval(() => void tick(), 2000);
+    return () => {
+      stop = true;
+      window.clearInterval(timer);
+    };
+  }, [loadState]);
+}
 
 /** Global 5s clock so "x s ago" labels and live chart edges advance. */
 export function useTicker(ms = 5000) {

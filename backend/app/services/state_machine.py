@@ -1,9 +1,9 @@
-"""Pure hydrant state machine (no I/O). See docs/ARCHITECTURE.md §1.
+"""Hydrant status values.
 
-States: CLEAR, POSSIBLY_BLOCKED, BLOCKED, OFFLINE.
-Uses block/clear thresholds (hysteresis), consecutive-reading counters,
-and a confirmation window before BLOCKED. Implementation: TODO.
+The ESP32 decides the status and sends it on telemetry. The backend stores
+that value. It does not derive CLEAR / BLOCKED from distance.
 """
+
 from enum import Enum
 
 

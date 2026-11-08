@@ -5,7 +5,7 @@ import { CloudOff } from "lucide-react";
 import { BottomDock, TopLeft, TopRight } from "./ConsoleChrome";
 import { DemoControlPanel } from "./DemoControlPanel";
 import { SubscribeDialog } from "@/components/notifications/SubscribeDialog";
-import { useAlertAudio, useAlertToasts, useGlobalShortcuts, useOnlineStatus, useTicker } from "@/hooks";
+import { useAlertAudio, useAlertToasts, useGlobalShortcuts, useLiveDeviceFeed, useOnlineStatus, useTicker } from "@/hooks";
 import { useApp } from "@/stores/appStore";
 import { cn } from "@/lib/utils";
 
@@ -29,6 +29,7 @@ export function AppShell() {
   const isMap = pathname === "/map";
 
   useBootstrap();
+  useLiveDeviceFeed();
   useTicker();
   useOnlineStatus();
   useGlobalShortcuts(searchRef);
