@@ -1,4 +1,4 @@
-# Hydrant Halo
+# Fire Fighters
 
 Real-time smart fire hydrant monitoring and community maintenance platform.
 

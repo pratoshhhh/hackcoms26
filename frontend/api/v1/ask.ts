@@ -5,7 +5,7 @@
 
 export const maxDuration = 60;
 
-const SYSTEM = `You answer questions about Hydrant Halo operations.
+const SYSTEM = `You answer questions about Fire Fighters operations.
 
 You receive two JSON sources:
 - database: rows from Postgres (hydrants, risk scores, incidents, recent BLOCKED transitions). Use these when they contain rows.

@@ -1,4 +1,4 @@
-# Hydrant Halo — Design Direction (v2, light)
+# Fire Fighters — Design Direction (v2, light)
 
 The goal is a tool a city fire-operations team would trust, and that a judge reads in five seconds. It should be calm, light, dense where it matters and empty everywhere else. These rules are binding. Check every PR against them.
 

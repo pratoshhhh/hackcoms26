@@ -1,4 +1,4 @@
-# Hydrant Halo — Frontend
+# Fire Fighters — Frontend
 
 React + TypeScript + Vite console for monitoring fire-hydrant accessibility. It runs fully without a backend: hydrant **locations** are real OpenStreetMap data for Rochester, NY, and **telemetry, incidents, alerts and verification** are simulated and labelled as such.
 

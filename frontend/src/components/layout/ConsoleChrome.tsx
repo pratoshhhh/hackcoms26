@@ -25,9 +25,9 @@ export function Logo({ className }: { className?: string }) {
 export const TopLeft = forwardRef<HTMLInputElement>(function TopLeft(_, ref) {
   return (
     <div className="float pointer-events-auto flex h-11 w-full max-w-[440px] items-center gap-2 rounded-lg pl-2 pr-1">
-      <Link to="/" className="flex shrink-0 items-center gap-2 rounded px-1 py-1 hover:bg-surface-2" aria-label="Hydrant Halo home">
+      <Link to="/" className="flex shrink-0 items-center gap-2 rounded px-1 py-1 hover:bg-surface-2" aria-label="Fire Fighters home">
         <Logo className="size-5" />
-        <span className="hidden text-sm font-semibold tracking-tight sm:inline">Hydrant Halo</span>
+        <span className="hidden text-sm font-semibold tracking-tight sm:inline">Fire Fighters</span>
       </Link>
       <span className="h-5 w-px bg-line" aria-hidden />
       <SearchBox ref={ref} className="min-w-0 flex-1" />
@@ -134,7 +134,7 @@ function AccountMenu() {
           </DropdownMenu.Item>
           <DropdownMenu.Separator className="my-1 h-px bg-line" />
           <DropdownMenu.Item className={item} onSelect={() => navigate("/")}>
-            About Hydrant Halo
+            About Fire Fighters
           </DropdownMenu.Item>
         </DropdownMenu.Content>
       </DropdownMenu.Portal>
