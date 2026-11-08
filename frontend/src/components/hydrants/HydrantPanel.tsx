@@ -3,7 +3,7 @@ import { motion, useAnimationControls } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import * as Tabs from "@radix-ui/react-tabs";
 import { toast } from "sonner";
-import { BellPlus, Check, Copy, Flag, Share2, Sparkles, Wrench, X } from "lucide-react";
+import { BellPlus, Check, Copy, Flag, Share2, Wrench, X } from "lucide-react";
 import { addressLine } from "@/data/obstructions";
 import type { Hydrant } from "@/types";
 import { useApp } from "@/stores/appStore";
@@ -19,6 +19,9 @@ import { ReportDialog } from "./ReportDialog";
 import { TwinFallback } from "@/components/three/TwinFallback";
 import { PANEL_WIDTH } from "@/components/map/HydrantMap";
 import { cn } from "@/lib/utils";
+import { IntelligenceMark } from "@/components/ai/HydrantIntelligence";
+
+const IntelIcon = () => <IntelligenceMark className="size-4 rounded-[4px]" />;
 
 const HydrantTwin = lazy(() => import("@/components/three/HydrantTwin"));
 
@@ -230,7 +233,7 @@ export function HydrantPanel({ hydrant: h }: { hydrant: Hydrant }) {
             {[
               { label: "Create maintenance task", icon: Wrench, onClick: requestMaintenance },
               { label: "Share location", icon: Share2, onClick: share },
-              { label: "Ask copilot about this hydrant", icon: Sparkles, onClick: () => set("copilotOpen", true) },
+              { label: "Ask Hydrant Intelligence about this hydrant", icon: IntelIcon, onClick: () => set("copilotOpen", true) },
             ].map((a) => (
               <Tip key={a.label} content={a.label}>
                 <Button size="icon-sm" variant="ghost" onClick={a.onClick} aria-label={a.label}>

@@ -9,7 +9,7 @@ import { useAlertToasts, useGlobalShortcuts, useOnlineStatus, useTicker } from "
 import { useApp } from "@/stores/appStore";
 import { cn } from "@/lib/utils";
 
-const CopilotDrawer = lazy(() => import("@/components/ai/CopilotDrawer"));
+const HydrantIntelligence = lazy(() => import("@/components/ai/HydrantIntelligence"));
 
 /** Kicks off data loading; shared by the landing page and the console. */
 export function useBootstrap() {
@@ -68,7 +68,7 @@ export function AppShell() {
       <SubscribeDialog />
       {copilotOpen && (
         <Suspense fallback={null}>
-          <CopilotDrawer />
+          <HydrantIntelligence />
         </Suspense>
       )}
       <Toaster

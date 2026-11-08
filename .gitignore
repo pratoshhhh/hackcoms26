@@ -32,3 +32,6 @@ secrets.h
 # build / deploy
 dist/
 .vercel
+
+# private notes
+docs/REALTIME_NOTIFICATIONS.md

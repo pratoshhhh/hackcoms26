@@ -23,7 +23,7 @@ function Block({ id, title, description, children }: { id?: string; title: strin
 const INTEGRATIONS = [
   ["Hydrant Halo API (Vultr)", "REST + WebSocket for live telemetry"],
   ["Tiger Data", "Time-series readings, incidents, analytics"],
-  ["Gemini", "Photo verification and incident copilot"],
+  ["Gemini", "Photo verification and Hydrant Intelligence"],
   ["Resend / Twilio", "Email and SMS delivery"],
   ["Solana Devnet", "Volunteer bounty payouts"],
 ];
