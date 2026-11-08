@@ -109,16 +109,18 @@ export interface NotificationSubscription {
   createdAt: number;
 }
 
-/** A record of what *would* be delivered. Never claims a real send. */
+/** One outbound message. Email is still simulated; SMS goes through Twilio. */
 export interface DeliveryRecord {
   id: string;
+  /** Subscription that matched, or "demo" for the demo phone. */
   subscriptionId: string;
   alertId: string;
   channel: Channel;
   provider: "resend" | "twilio";
   to: string;
   subject: string;
-  status: "simulated";
+  status: "simulated" | "sending" | "sent" | "failed";
+  error?: string;
   createdAt: number;
 }
 

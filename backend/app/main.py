@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.ask import router as ask_router
+from app.api.notify import router as notify_router
 from app.core.config import settings
 from app.db import close_db, init_db, ping
 
@@ -18,6 +19,7 @@ async def lifespan(_app: FastAPI):
 app = FastAPI(title="Hydrant Halo API", version="0.1.0", lifespan=lifespan)
 
 app.include_router(ask_router)
+app.include_router(notify_router)
 
 app.add_middleware(
     CORSMiddleware,

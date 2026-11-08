@@ -5,6 +5,15 @@ import { Button, PageHeader } from "@/components/ui/primitives";
 import { NotificationList } from "@/components/notifications/NotificationList";
 import { maskContact } from "@/services/notificationService";
 import { fmtDateTime } from "@/utils/format";
+import { cn } from "@/lib/utils";
+import type { DeliveryRecord } from "@/types";
+
+const STATUS: Record<DeliveryRecord["status"], { label: string; cls: string }> = {
+  simulated: { label: "Simulated — not sent", cls: "text-warn" },
+  sending: { label: "Sending…", cls: "text-text-2" },
+  sent: { label: "Sent", cls: "text-ok" },
+  failed: { label: "Failed", cls: "text-crit" },
+};
 
 export default function NotificationsPage() {
   const alerts = useApp((s) => s.alerts);
@@ -19,7 +28,7 @@ export default function NotificationsPage() {
     <div className="flex h-full flex-col">
       <PageHeader
         title="Notifications"
-        description="In-app alerts and the log of email and SMS messages that would be sent."
+        description="In-app alerts and the log of email and SMS messages."
         actions={
           <Button variant="primary" onClick={() => set("subscribeFor", "area")}>
             Subscribe to alerts
@@ -50,8 +59,8 @@ export default function NotificationsPage() {
           </div>
         </Tabs.Content>
         <Tabs.Content value="log" className="min-h-0 flex-1 overflow-y-auto">
-          <div className="mx-6 my-4 rounded border border-warn/30 bg-warn/10 px-3 py-2 text-xs text-warn">
-            Simulated — not sent. These rows show what the backend would deliver through Resend (email) and Twilio (SMS) once connected.
+          <div className="mx-6 my-4 rounded border border-line bg-surface-1 px-3 py-2 text-xs text-text-2">
+            SMS goes out through Twilio. Email is simulated until Resend is connected. Twilio trial accounts can only text verified numbers.
           </div>
           {deliveries.length === 0 ? (
             <p className="px-6 py-4 text-sm text-text-2">
@@ -82,9 +91,12 @@ export default function NotificationsPage() {
                       <td className="num px-3 py-2 text-text-2">{fmtDateTime(d.createdAt)}</td>
                       <td className="px-3 py-2">{d.channel === "email" ? "Email" : "SMS"}</td>
                       <td className="px-3 py-2 text-text-2">{d.provider === "resend" ? "Resend" : "Twilio"}</td>
-                      <td className="num px-3 py-2">{maskContact(d.to)}</td>
+                      <td className="num px-3 py-2">{d.subscriptionId === "demo" ? d.to : maskContact(d.to)}</td>
                       <td className="px-3 py-2">{d.subject}</td>
-                      <td className="px-3 py-2 text-warn">Simulated — not sent</td>
+                      <td className={cn("px-3 py-2", STATUS[d.status].cls)} title={d.error}>
+                        {STATUS[d.status].label}
+                        {d.error && <span className="block max-w-xs truncate text-2xs text-text-3">{d.error}</span>}
+                      </td>
                     </tr>
                   ))}
                 </tbody>

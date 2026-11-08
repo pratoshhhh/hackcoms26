@@ -21,6 +21,12 @@ class Settings(BaseSettings):
     gemini_api_key: str = ""
     gemini_model: str = "gemini-3.8-flash"
 
+    twilio_account_sid: str = ""
+    twilio_auth_token: str = ""
+    twilio_from_number: str = ""
+    twilio_messaging_service_sid: str = ""
+    twilio_demo_to_number: str = ""
+
     s3_endpoint: str = ""
     s3_bucket: str = "hydrant-halo"
     s3_access_key: str = ""

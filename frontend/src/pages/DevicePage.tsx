@@ -1,9 +1,10 @@
 import { Suspense, lazy, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { Cable, Radio, SlidersHorizontal, Unplug, Volume2 } from "lucide-react";
+import { Cable, MessageSquare, Radio, SlidersHorizontal, Unplug, Volume2 } from "lucide-react";
 import { useApp, useHydrantList } from "@/stores/appStore";
-import type { ObstructionType } from "@/types";
+import type { Hydrant, ObstructionType } from "@/types";
+import { sendSms, smsStatus, type SmsStatus } from "@/services/smsService";
 import { Button, Input, Label, PageHeader, Select, Switch } from "@/components/ui/primitives";
 import { StatusChip, StatusIcon } from "@/components/hydrants/status";
 import { KIND_STATUS } from "@/components/notifications/NotificationList";
@@ -79,6 +80,69 @@ function ClearanceGauge({ distance }: { distance: number | null }) {
         <span className="absolute right-0">{GAUGE_MAX_CM}+ cm</span>
       </div>
     </div>
+  );
+}
+
+function TextAlertsCard({ hydrant }: { hydrant: Hydrant | undefined }) {
+  const enabled = useApp((s) => s.textDemoPhone);
+  const set = useApp((s) => s.set);
+  const lastDemo = useApp((s) => s.deliveries.find((d) => d.subscriptionId === "demo"));
+  const [status, setStatus] = useState<SmsStatus | null>(null);
+  const [statusError, setStatusError] = useState<string | null>(null);
+  const [testing, setTesting] = useState(false);
+
+  useEffect(() => {
+    smsStatus()
+      .then(setStatus)
+      .catch((e: Error) => setStatusError(e.message));
+  }, []);
+
+  const ready = Boolean(status?.configured && status.demoTo);
+  const sendTest = async () => {
+    if (!hydrant) return;
+    setTesting(true);
+    try {
+      const r = await sendSms(undefined, `Hydrant Halo test: alerts for hydrant ${hydrant.id} at ${addressLine(hydrant)} will be texted to this phone.`);
+      toast.success("Test text sent", {
+        description: r.via === "trial_template" ? `To ${r.to}. Trial account, so Twilio sent its built-in alert text.` : `To ${r.to}`,
+      });
+    } catch (e) {
+      toast.error("Text failed", { description: (e as Error).message });
+    } finally {
+      setTesting(false);
+    }
+  };
+
+  return (
+    <Card title="Text alerts" icon={MessageSquare}>
+      <label className="flex items-center justify-between gap-4">
+        <span>
+          Text the demo phone
+          <span className="block text-xs text-text-3">On a blocked, cleared, or offline alert from the demo controls or the ESP32</span>
+        </span>
+        <Switch checked={enabled} disabled={!ready} onCheckedChange={(v) => set("textDemoPhone", v)} />
+      </label>
+      <p className={cn("text-xs", ready ? "text-text-2" : "text-warn")}>
+        {statusError
+          ? `Can't reach the SMS endpoint: ${statusError}`
+          : !status
+            ? "Checking Twilio…"
+            : !status.configured
+              ? "Twilio isn't configured on the server. Set TWILIO_* in .env and restart the API."
+              : !status.demoTo
+                ? "Set TWILIO_DEMO_TO_NUMBER in .env to choose the demo phone."
+                : `Sends to ${status.demoTo} through Twilio.`}
+      </p>
+      {lastDemo && (
+        <p className={cn("text-xs", lastDemo.status === "sent" ? "text-ok" : lastDemo.status === "failed" ? "text-crit" : "text-text-2")}>
+          Last text: {lastDemo.subject} · {lastDemo.status === "sending" ? "sending…" : lastDemo.status}
+          {lastDemo.error && ` (${lastDemo.error})`}
+        </p>
+      )}
+      <Button disabled={!ready || !hydrant || testing} onClick={() => void sendTest()}>
+        <MessageSquare /> {testing ? "Sending…" : "Send a test text"}
+      </Button>
+    </Card>
   );
 }
 
@@ -338,6 +402,8 @@ export default function DevicePage() {
             </Button>
             <p className="text-xs text-text-3">Browsers stay silent until you click somewhere on the page, so click once before the demo starts.</p>
           </Card>
+
+          <TextAlertsCard hydrant={h} />
         </div>
       </div>
     </div>
